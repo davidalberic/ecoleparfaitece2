@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeu de calcul mental - École Parfaite</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(to right, #f9f9f9, #d1e8ff);
+    }
+    h1 {
+      color: #0077cc;
+    }
+    #game {
+      display: none;
+      margin-top: 20px;
+    }
+    #problem {
+      font-size: 28px;
+      margin: 20px 0;
+    }
+    input {
+      padding: 10px;
+      font-size: 18px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    #result, #scoreDisplay, #timer {
+      margin: 15px;
+      font-weight: bold;
+    }
+    #startBtn {
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Calcul Mental École Parfaite 🎯</h1>
+  <p id="activationPrompt">Clique ou appuie sur une touche pour activer les sons 🔊</p>
+
+  <div id="game">
+    <div id="problem"></div>
+    <input type="number" id="answer" placeholder="Ta réponse" />
+    <button onclick="checkAnswer()">Vérifier</button>
+    <div id="result"></div>
+    <div id="scoreDisplay">Score : 0</div>
+    <div id="timer">Temps restant : 120s</div>
+  </div>
+
+  <audio id="correctSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+  <audio id="wrongSound" src="https://www.soundjay.com/button/beep-10.wav"></audio>
+
+  <script>
+    let num1, num2, operator, answer;
+    let score = 0;
+    let timeLeft = 120;
+    let timer;
+    let audioUnlocked = false;
+
+    const operators = ["+", "-", "×", "÷"];
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateProblem() {
+      num1 = getRandomInt(1, 10);
+      num2 = getRandomInt(1, 10);
+      operator = operators[getRandomInt(0, 3)];
+
+      if (operator === "÷") {
+        num1 = num1 * num2;
+      }
+
+      document.getElementById("problem").textContent = `${num1} ${operator} ${num2}`;
+      switch (operator) {
+        case "+": answer = num1 + num2; break;
+        case "-": answer = num1 - num2; break;
+        case "×": answer = num1 * num2; break;
+        case "÷": answer = num1 / num2; break;
+      }
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseFloat(document.getElementById("answer").value);
+      const result = document.getElementById("result");
+      if (userAnswer === answer) {
+        result.textContent = "✅ Bonne réponse !";
+        score++;
+        if (audioUnlocked) document.getElementById("correctSound").play();
+      } else {
+        result.textContent = "❌ Mauvaise réponse.";
+        if (audioUnlocked) document.getElementById("wrongSound").play();
+      }
+      document.getElementById("scoreDisplay").textContent = `Score : ${score}`;
+      document.getElementById("answer").value = "";
+      generateProblem();
+    }
+
+    function startGame() {
+      document.getElementById("game").style.display = "block";
+      document.getElementById("activationPrompt").style.display = "none";
+      generateProblem();
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = `Temps restant : ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById("result").textContent = `⏱️ Temps écoulé ! Score final : ${score}`;
+          document.getElementById("answer").disabled = true;
+        }
+      }, 1000);
+    }
+
+    function unlockAudioAndStart() {
+      if (!audioUnlocked) {
+        document.getElementById("correctSound").play().catch(() => {});
+        document.getElementById("wrongSound").play().catch(() => {});
+        audioUnlocked = true;
+        startGame();
+      }
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (!audioUnlocked) unlockAudioAndStart();
+      if (e.key === "Enter") checkAnswer();
+    });
+
+    document.addEventListener("click", function () {
+      if (!audioUnlocked) unlockAudioAndStart();
+    });
+  </script>
+</body>
+</html>
