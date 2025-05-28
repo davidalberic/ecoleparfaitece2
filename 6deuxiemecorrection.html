@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Calcul Express</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #a8e6cf, #dcedc1);
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+      font-size: 2em;
+    }
+    .zone {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #calcul {
+      font-size: 2em;
+      margin: 20px 0;
+      color: #444;
+    }
+    input[type="number"] {
+      padding: 10px;
+      font-size: 1.2em;
+      width: 100px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin-top: 10px;
+      background-color: #26a69a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00796b;
+    }
+    #resultat {
+      font-size: 1.2em;
+      margin-top: 15px;
+    }
+    #score, #timer {
+      font-weight: bold;
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="zone">
+    <h1>Calcul Express 🔢</h1>
+    <div id="timer">⏱ Temps restant : 120s</div>
+    <div id="score">✅ Score : 0</div>
+    <div id="calcul">5 + 3 = ?</div>
+    <input type="number" id="reponse" />
+    <br>
+    <button id="verifier">Vérifier</button>
+    <div id="resultat"></div>
+  </div>
+
+  <!-- Sons -->
+  <audio id="sonBonne" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+  <audio id="sonMauvaise" src="https://www.soundjay.com/button/beep-10.wav" preload="auto"></audio>
+
+  <script>
+    const calculEl = document.getElementById("calcul");
+    const reponseEl = document.getElementById("reponse");
+    const verifierBtn = document.getElementById("verifier");
+    const resultatEl = document.getElementById("resultat");
+    const scoreEl = document.getElementById("score");
+    const timerEl = document.getElementById("timer");
+    const sonBonne = document.getElementById("sonBonne");
+    const sonMauvaise = document.getElementById("sonMauvaise");
+
+    let a, b, operateur, solution;
+    let score = 0;
+    let tempsRestant = 120;
+    let chrono;
+
+    function genererCalcul() {
+      const operations = ['+', '-', '*', '/'];
+      operateur = operations[Math.floor(Math.random() * operations.length)];
+      a = Math.floor(Math.random() * 10) + 1;
+      b = Math.floor(Math.random() * 10) + 1;
+
+      // Évite les divisions avec reste
+      if (operateur === '/') {
+        solution = a;
+        b = Math.floor(Math.random() * 9) + 1;
+        a = b * solution;
+      }
+
+      switch (operateur) {
+        case '+': solution = a + b; break;
+        case '-': solution = a - b; break;
+        case '*': solution = a * b; break;
+        case '/': solution = a / b; break;
+      }
+
+      calculEl.textContent = `${a} ${operateur} ${b} = ?`;
+      reponseEl.value = '';
+      reponseEl.focus();
+    }
+
+    function verifierReponse() {
+      const reponse = parseFloat(reponseEl.value);
+      if (reponse === solution) {
+        score++;
+        resultatEl.textContent = "✅ Bonne réponse !";
+        resultatEl.style.color = "green";
+        sonBonne.play();
+      } else {
+        resultatEl.textContent = `❌ Mauvaise réponse ! (${a} ${operateur} ${b} = ${solution})`;
+        resultatEl.style.color = "red";
+        sonMauvaise.play();
+      }
+      scoreEl.textContent = `✅ Score : ${score}`;
+      genererCalcul();
+    }
+
+    verifierBtn.addEventListener("click", verifierReponse);
+    reponseEl.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        verifierReponse();
+      }
+    });
+
+    function lancerChrono() {
+      chrono = setInterval(() => {
+        tempsRestant--;
+        timerEl.textContent = `⏱ Temps restant : ${tempsRestant}s`;
+        if (tempsRestant <= 0) {
+          clearInterval(chrono);
+          verifierBtn.disabled = true;
+          reponseEl.disabled = true;
+          resultatEl.textContent = `⏹ Temps écoulé ! Score final : ${score}`;
+        }
+      }, 1000);
+    }
+
+    // Initialisation
+    genererCalcul();
+    lancerChrono();
+  </script>
+</body>
+</html>
